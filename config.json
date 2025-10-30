@@ -1,0 +1,24 @@
+{
+  "logInterval": 20,
+  "logPath": "./logs/gibberish.log",
+  "messages": [
+    "Everything is fine.",
+    "Its over 9000!!!",
+    "Whatcha doin?  Thwartin my plans?.... Are you?",
+    "DODGE!!!!!!!!!!!",
+    "why...didn't....you....dodge...",
+    "Arch btw",
+    "Have you tried reseting it?",
+    "It has what plants crave",
+    "I think I sent it just a lil to hard bud.  Just a lil too hard.",
+    "Snake..?...SNAKE...?...SNAAAAKKKEEEE??!",
+    "neovim btw",
+    "I've had enough of you.  :q",
+    "Rebooting the flux capacitor...",
+    "404: Coffee not found.",
+    "It worked on my machine.",
+    "System reached 88 MPH — time travel imminent!",
+    "what was I doing?",
+    "Writing the entirety of pi"
+  ]
+}

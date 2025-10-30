@@ -1,52 +1,90 @@
 const express = require("express");
-const app = express();
+const fs = require("fs");
+const path = require("path");
 
-function randomGibberish(length = 10) {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+const app = express();
+const configPath = path.resolve(__dirname, "config.json");
+
+app.use(express.static(path.join(__dirname, "public")));
+
+let caseCounter = 198723;
+let loggingInterval = null;
+
+let config;
+try {
+  const rawConfig = fs.readFileSync(configPath, "utf8");
+  config = JSON.parse(rawConfig);
+  console.log("Loaded configuration", config);
+} catch (err) {
+  console.error("Error loading config.json", err);
+  process.exit(1);
+}
+
+function nextCaseNumber() {
+  const num = caseCounter;
+  caseCounter++;
+  return `Case: ${num}`;
+}
+
+function randomMessage() {
+  const msgs = config.messages;
+  const index = Math.floor(Math.random() * msgs.length);
+  return msgs[index];
+}
+
+function generateLogLine() {
+  const timestamp = new Date().toISOString();
+  const message = randomMessage();
+  const caseNum = nextCaseNumber();
+  const logLine = `${caseNum} | ${timestamp} | Message:${message}`;
+  return logLine;
+}
+
+function writeLogLine() {
+  const line = generateLogLine() + "\n";
+  fs.appendFileSync(config.logPath, line);
+  console.log(line.trim());
 }
 
 app.get("/", (req, res) => {
-  res.send(`
-<!DOCTYPE html>
-<html>
-<head>
-<title> Gibberish Log Generator</title>
-</head>
-<body style="font-family: monospace; text-align: center; margin-top:3em;">
-<h1>Gibberish Log Generator</h1>
-<button id = "genBtn">Generate Log</button>
-<pre id="output"></pre>
-
-<script>
-const btn = document.getElementById('genBtn');
-const output = document.getElementById('output')
-
-btn.addEventListener('click', async () => {
-const res = await fetch('/generate');
-const data = await res.text();
-output.textContent = data;
-});
-</script>
-</body>
-</html>
-`);
+  const logLine = generateLogLine();
+  res.send(`<pre>${logLine}</pre>`);
 });
 
-app.get("/generate", (req, res) => {
-  const log = randomGibberish(20);
-  console.log("[LOG]", log);
-  res.send("Generated log: " + log);
+app.get("/log/once", (req, res) => {
+  writeLogLine();
+  res.send("One log line written!");
 });
 
-// app.get("/", (req, res) => {
-//   const log = randomGibberish(15);
-//   console.log(`[LOG] ${log}`); res.send(`Gobberish log: ${log}`); });
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+app.get("/log/start", (req, res) => {
+  if (!loggingInterval) {
+    loggingInterval = setInterval(writeLogLine, config.logInterval);
+  } else {
+    res.send("Logging already running.");
+  }
+});
+
+app.get("/log/stop", (req, res) => {
+  if (loggingInterval) {
+    clearInterval(loggingInterval);
+    loggingInterval = null;
+  } else {
+    res.send("Logging was not running.");
+  }
+});
+
+app.get("/log/view", (req, res) => {
+  try {
+    const content = fs.readFileSync(config.logPath, "utf8");
+    res.send(`${content}`);
+  } catch (err) {
+    res.status(500).send("Failed to read log file.");
+  }
+});
+
+});
+
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
