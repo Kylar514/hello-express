@@ -19,4 +19,13 @@ async function viewLogs() {
   document.getElementById("logOutput").innerText = text;
 }
 
+async function downloadJson() {
+  window.location.href = "/log/download/json";
+  viewLogs();
+}
+
+async function downloadLog() {
+  window.location.href = "/log/download/log";
+}
+
 setInterval(viewLogs, 20);

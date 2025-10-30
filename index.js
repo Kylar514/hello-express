@@ -82,6 +82,28 @@ app.get("/log/view", (req, res) => {
   }
 });
 
+app.get("/log/download/json", (req, res) => {
+  try {
+    const data = fs.readFileSync(config.logPath, "utf8");
+    const lines = data.split("\n").filter(Boolean);
+    const json = lines.map((line) => ({ line }));
+    res.setHeader("Content-Disposition", "attachment; filename=log.json");
+    res.setHeader("Content-Type", "application/json");
+    res.send(JSON.stringify(json, null, 2));
+  } catch (err) {
+    res.status(500).send("Error reading log file");
+  }
+});
+
+app.get("/log/download/log", (req, res) => {
+  try {
+    res.setHeader("Content-Disposition", "attatchment; filename=log.txt");
+    res.setHeader("Content-Type", "text/plain");
+    const stream = fs.createReadStream(config.logPath);
+    stream.pipe(res);
+  } catch (err) {
+    res.status(500).send("Error reading log file");
+  }
 });
 
 const PORT = 3001;
