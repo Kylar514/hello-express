@@ -11,11 +11,12 @@ button {
   font-size: 16px;
 }
 
-#logOutput {
-  background: #111;
-  color: #0f0;
+.log-box {
+  max-height: 300px; /* fixed height for the box */
+  overflow-y: auto; /* vertical scroll when content overflows */
+  background: #111; /* dark background for contrast */
+  color: #0f0; /* green text like a console */
   padding: 10px;
-  height: 400px;
-  overflow-y: scroll;
-  white-space: pre-wrap;
+  border-radius: 5px;
+  font-family: monospace;
 }

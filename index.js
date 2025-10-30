@@ -1,6 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const memoryLogs = [];
 
 const app = express();
 const configPath = path.resolve(__dirname, "config.json");
@@ -41,9 +42,20 @@ function generateLogLine() {
 }
 
 function writeLogLine() {
-  const line = generateLogLine() + "\n";
-  fs.appendFileSync(config.logPath, line);
-  console.log(line.trim());
+  const line = generateLogLine();
+  const logDir = path.dirname(config.logPath);
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+  fs.appendFileSync(config.logPath, line + "\n");
+  memoryLogs.push(line);
+  if (memoryLogs.length > config.maxMemory) memoryLogs.shift();
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
 app.get("/", (req, res) => {
@@ -82,6 +94,14 @@ app.get("/log/view", (req, res) => {
   }
 });
 
+app.get("/log/memory", (req, res) => {
+  try {
+    res.json(memoryLogs);
+  } catch (err) {
+    res.status(500).send("Failed to read memory.");
+  }
+});
+
 app.get("/log/download/json", (req, res) => {
   try {
     const data = fs.readFileSync(config.logPath, "utf8");
@@ -104,6 +124,27 @@ app.get("/log/download/log", (req, res) => {
   } catch (err) {
     res.status(500).send("Error reading log file");
   }
+});
+
+app.post("/log/file/clear", (req, res) => {
+  if (fs.existsSync(config.logPath)) fs.writeFileSync(config.logPath, "");
+  res.sendStatus(200);
+});
+
+app.post("/log/memory/clear", (req, res) => {
+  memoryLogs.length = 0;
+  res.sendStatus(200);
+});
+
+app.get("/log/sizes", (req, res) => {
+  const fileSizeBytes = fs.existsSync(config.logPath)
+    ? fs.statSync(config.logPath).size
+    : 0;
+  const memorySizeBytes = memoryLogs.join("\n").length;
+  res.json({
+    fileSize: formatBytes(fileSizeBytes),
+    memorySize: formatBytes(memorySizeBytes),
+  });
 });
 
 const PORT = 3001;

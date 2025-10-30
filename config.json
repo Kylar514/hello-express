@@ -1,6 +1,7 @@
 {
   "logInterval": 20,
   "logPath": "./logs/gibberish.log",
+  "maxMemory": "10000",
   "messages": [
     "Everything is fine.",
     "Its over 9000!!!",

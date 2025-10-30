@@ -15,9 +15,21 @@
       <button onclick="stopLogging()">Stop Logging</button>
       <button onclick="downloadJson()">Download json</button>
       <button onclick="downloadLog()">Download log</button>
+      <button id="clearFileBtn">Clear File Logs</button>
+      <button id="clearMemoryBtn">Clear Memory Logs</button>
     </div>
 
-    <pre id="logOutput"></pre>
+    <div class="log-container">
+      <h2>File Logs</h2>
+      <p>File size: <span id="fileSize">0 Bytes</span></p>
+      <pre id="fileLogOutput" class="log-box"></pre>
+    </div>
+
+    <div class="log-container">
+      <h2>Memory Logs</h2>
+      <p>Memory size: <span id="memorySize">0 Bytes</span></p>
+      <pre id="memoryLogOutput" class="log-box"></pre>
+    </div>
 
     <script src="script.js"></script>
   </body>
